@@ -9,7 +9,7 @@ export class InstagramGraphAPI {
   constructor(config: types.Config) {
     const { accessToken, baseUrl = 'https://graph.facebook.com/v15.0' } = config
 
-    this.accessToken = accessToken
+    this.accessToken = accessToken || process.env.INSTAGRAM_ACCESS_TOKEN
     this.baseUrl = baseUrl
 
     if (!accessToken) {
