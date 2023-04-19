@@ -1,11 +1,11 @@
 /**
- * Creates an instance of the `got` HTTP client with default settings and hooks for use with the Instagram Graph API.
+ * Creates an instance of the `ky` HTTP client with default settings and hooks for use with the Instagram Graph API.
  *
  * @param {types.Config} opts - The configuration options for the API instance.
  *
- * @returns {got} An instance of the `got` HTTP client.
+ * @returns {ky} An instance of the `ky` HTTP client.
  */
-import got from 'got'
+import ky from 'ky'
 
 import * as types from './types'
 import { InstagramGraphApiError } from './errors'
@@ -13,7 +13,7 @@ import { InstagramGraphApiError } from './errors'
 const DEFAULT_BASE_URL = 'https://graph.facebook.com/v16.0'
 
 export function createApiClient(opts: types.Config) {
-  return got.extend({
+  return ky.extend({
     prefixUrl: opts.baseUrl || DEFAULT_BASE_URL,
     timeout: 1000 * 120,
     headers: {
@@ -33,8 +33,7 @@ export function createApiClient(opts: types.Config) {
         (response) => {
           if (opts.debug) {
             const elapsedTime =
-              Date.now() -
-              (response.request.options.context.startTime as number)
+              Date.now() - (response.context.startTime as number)
             console.log(
               `Received response from ${response.url} in ${elapsedTime}ms`
             )
@@ -43,22 +42,23 @@ export function createApiClient(opts: types.Config) {
         }
       ],
       beforeError: [
+        // @ts-ignore
         async (error) => {
-          if (error instanceof got.HTTPError) {
-            const response = error.response
-            try {
-              const body = JSON.parse((response as any).body)
-              if (body.error) {
-                return new InstagramGraphApiError(body.error.message, {
-                  code: body.error.code,
-                  type: body.error.type,
-                  fbtrace_id: body.error.fbtrace_id
-                })
-              }
-            } catch (e) {
-              console.error('Failed reading HTTPError response body', e)
+          //if (error instanceof (ky as any).HTTPError) {
+          const response = error.response
+          try {
+            const body = JSON.parse((response as any).body)
+            if (body.error) {
+              return new InstagramGraphApiError(body.error.message, {
+                code: body.error.code,
+                type: body.error.type,
+                fbtrace_id: body.error.fbtrace_id
+              })
             }
+          } catch (e) {
+            console.error('Failed reading HTTPError response body', e)
           }
+          //}
           return error
         }
       ]
