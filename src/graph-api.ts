@@ -150,7 +150,7 @@ export class InstagramGraphAPI {
   }): Promise<number> {
     const { userId, hashtagName } = params
     return this.api
-      .get(`ig_hashtag_search?user_id=${userId}?q=${hashtagName}`)
+      .get(`ig_hashtag_search?user_id=${userId}&q=${hashtagName}`)
       .json<{ data: { id: number }[] }>()
       .then((response) => response.data[0].id)
   }
@@ -260,7 +260,10 @@ export class InstagramGraphAPI {
    */
   async getComments(params: { mediaId: number }) {
     const { mediaId } = params
-    return this.api.get(`${mediaId}/comments`).json()
+    return this.api
+      .get(`${mediaId}/comments`)
+      .json<{ data: { id: string }[] }>()
+      .then((response) => response.data)
   }
 
   /**
@@ -270,7 +273,10 @@ export class InstagramGraphAPI {
    */
   async getChildren(params: { mediaId: number }) {
     const { mediaId } = params
-    return this.api.get(`${mediaId}/children`).json()
+    return this.api
+      .get(`${mediaId}/children`)
+      .json<{ data: { id: number; type: string }[] }>()
+      .then((response) => response.data)
   }
 
   /**
@@ -314,7 +320,10 @@ export class InstagramGraphAPI {
    */
   async getProductTags(params: { mediaId: string }) {
     const { mediaId } = params
-    return this.api.get(`${mediaId}/product_tags`).json()
+    return this.api
+      .get(`${mediaId}/product_tags`)
+      .json<{ data: { merchant_id: number; product_id: number }[] }>()
+      .then((response) => response.data)
   }
 
   /**
@@ -370,7 +379,8 @@ export class InstagramGraphAPI {
     const { userId, fields = [] } = params
     return this.api
       .get(`${userId}/available_catalogs?fields=${fields.join(',')}`)
-      .json()
+      .json<{ data: { id: number; name: string }[] }>()
+      .then((response) => response.data)
   }
 
   /**
@@ -482,7 +492,8 @@ export class InstagramGraphAPI {
             : ''
         }`
       )
-      .json()
+      .json<{ data: {id: number, type: string}[]}>()
+      .then(response => response.data)
   }
 
   async createMedia(params: {
@@ -720,14 +731,15 @@ export class InstagramGraphAPI {
    * @param {number} params.userId The ID of the Instagram User to be queried.
    * @param {string} params.fields Comma-separated list of IG Media Fields you want returned.
    *
-   * @returns {Promise<{types.TaggedMediaResponse[]}>} Returns a Promise that resolves with the IG Media objects.
+   * @returns a Promise that resolves with the IG Media objects.
    */
   async getTaggedMedia(params: {
     userId: number
     fields: string[]
-  }): Promise<types.TaggedMediaResponse[]> {
+  }) {
     const { userId, fields = [] } = params
-    return this.api.get(`${userId}/tags?fields=${fields.join(',')}`).json()
+    return this.api.get(`${userId}/tags?fields=${fields.join(',')}`).json<{data: { id: number, type: string}[]}>()
+    .then(response => response.data)
   }
 
   /**
